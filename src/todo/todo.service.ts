@@ -18,13 +18,18 @@ export class TodoService {
     }
   }
 
-  async findAll(userId: string): Promise<Todo[]> {
+  async findAll(userId: string, page: number, limit: number): Promise<{ todos: Todo[]; total: number }> {
     try {
-      return await this.todoModel.find({ user: userId }).exec();
+      const skip = (page - 1) * limit;
+      const todos = await this.todoModel.find({ user: userId }).skip(skip).limit(limit).exec();
+      const total = await this.todoModel.countDocuments({ user: userId });
+  
+      return { todos, total };
     } catch (error) {
       throw new InternalServerErrorException('Failed to fetch todos');
     }
   }
+  
 
   async findOne(id: string): Promise<Todo | null> {
     const todo = await this.todoModel.findById(id).exec();

@@ -22,12 +22,19 @@ export class TodoController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all todos for a user' })
+  @ApiOperation({ summary: 'Get paginated todos for a user' })
   @ApiQuery({ name: 'user', required: true, description: 'User ID to fetch todos' })
-  @ApiResponse({ status: 200, description: 'List of todos', type: [Todo] })
-  async findAll(@Query('user') userId: string): Promise<Todo[]> {
-    return await this.todosService.findAll(userId);
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of items per page', example: 10 })
+  @ApiResponse({ status: 200, description: 'Paginated list of todos', type: [Todo] })
+  async findAll(
+    @Query('user') userId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10'
+  ): Promise<{ todos: Todo[]; total: number }> {
+    return await this.todosService.findAll(userId, parseInt(page, 10), parseInt(limit, 10));
   }
+  
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a todo by ID' })
